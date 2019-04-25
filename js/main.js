@@ -81,14 +81,13 @@ var xScale = d3.time.scale()
 var colorScale = d3.scale.linear().domain([0,1,2,3,4,5,6])
       .interpolate(d3.interpolateRgb)
       .range([
-      d3.rgb("#16a085"),
-      d3.rgb("#27ae60"),
-      d3.rgb("#2980b9"),
-      d3.rgb("#8e44ad"),
-      d3.rgb("#27ae60"),
-      d3.rgb("#16a085"),
-        
-      d3.rgb("#250902"),
+        d3.rgb("#38040e"),
+        d3.rgb("#640d14"),
+        d3.rgb("#ad2831"),
+        d3.rgb("#800e13"),
+        d3.rgb("#640d14"),
+        d3.rgb("#38040e"),
+        d3.rgb("#250902"),
       ]);
       
 
