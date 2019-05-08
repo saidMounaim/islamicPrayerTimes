@@ -120,6 +120,78 @@ var baseGroup;
 
 function display() {
 
+
+    $(document).on("submit", "#formPray", function (e) {
+        e.preventDefault();
+        var city = d3.select("select#city").property("value").split("->")[1];;
+        var year = d3.select("#year").property("value");
+        console.log("CITY", city);
+        console.log("YEAR", year);
+
+        if (city !== "" && year !== "") {
+
+            if (focusDate) focusDate.remove();
+            if (focusFajr) focusFajr.remove();
+            if (focusSunrise) focusSunrise.remove();
+            if (focusDhuhr) focusDhuhr.remove();
+            if (focusAsr) focusAsr.remove();
+            if (focusMaghrib) focusMaghrib.remove();
+            if (focusIsha) focusIsha.remove();
+            if (vLine) vLine.remove();
+
+            d3.queue()
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=1&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=2&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=3&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=4&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=5&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=6&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=7&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=8&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=9&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=10&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=11&year=${year}&method=3`)
+                .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=12&year=${year}&method=3`)
+                .await(function (error, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) {
+                    dataset = p1.data.concat(p2.data);
+                    dataset = dataset.concat(p3.data);
+                    dataset = dataset.concat(p4.data);
+                    dataset = dataset.concat(p5.data);
+                    dataset = dataset.concat(p6.data);
+                    dataset = dataset.concat(p7.data);
+                    dataset = dataset.concat(p8.data);
+                    dataset = dataset.concat(p9.data);
+                    dataset = dataset.concat(p10.data);
+                    dataset = dataset.concat(p11.data);
+                    dataset = dataset.concat(p12.data);
+
+                    mapDataSet = dataset.reduce(function (map, obj) {
+
+                        obj.timings.Fajr = obj.timings.Fajr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+                        obj.timings.Sunrise = obj.timings.Sunrise.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+                        obj.timings.Dhuhr = obj.timings.Dhuhr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+                        obj.timings.Asr = obj.timings.Asr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+                        obj.timings.Maghrib = obj.timings.Maghrib.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+                        obj.timings.Isha = obj.timings.Isha.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
+
+                        var value_ = {
+                            Fajr: parseTime(obj.timings.Fajr).getHours() * 60 + parseTime(obj.timings.Fajr).getMinutes(),
+                            Sunrise: parseTime(obj.timings.Sunrise).getHours() * 60 + parseTime(obj.timings.Sunrise).getMinutes(),
+                            Dhuhr: parseTime(obj.timings.Dhuhr).getHours() * 60 + parseTime(obj.timings.Dhuhr).getMinutes(),
+                            Asr: parseTime(obj.timings.Asr).getHours() * 60 + parseTime(obj.timings.Asr).getMinutes(),
+                            Maghrib: parseTime(obj.timings.Maghrib).getHours() * 60 + parseTime(obj.timings.Maghrib).getMinutes(),
+                            Isha: parseTime(obj.timings.Isha).getHours() * 60 + parseTime(obj.timings.Isha).getMinutes()
+                        };
+                        map[Math.floor(xScale(parseDateApi(obj.date.readable).getTime()))] = value_;
+                        return map;
+                    }, {});
+
+                    update(dataset);
+
+                });
+        }
+    })
+
 svgSelection = svg
     .attr("width", width + marginLeft + marginRight)
     .attr("height", height + marginTop + marginBottom);
@@ -197,67 +269,6 @@ console.log("YEAR", year);
         update(dataset);
 
     });
-
-    $(document).on("submit", "#formPray", function (e) {
-        e.preventDefault();
-        var city = d3.select("select#city").property("value").split("->")[1];;
-        var year = d3.select("#year").property("value");
-        console.log("CITY", city);
-        console.log("YEAR", year);
-
-        if (city !== "" && year !== "") {
-            d3.queue()
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=1&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=2&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=3&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=4&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=5&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=6&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=7&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=8&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=9&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=10&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=11&year=${year}&method=3`)
-            .defer(d3.json, `https://api.aladhan.com/v1/calendarByCity?city=${city}&country=MA&&month=12&year=${year}&method=3`)
-            .await(function (error, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12) {
-                dataset = p1.data.concat(p2.data);
-                dataset = dataset.concat(p3.data);
-                dataset = dataset.concat(p4.data);
-                dataset = dataset.concat(p5.data);
-                dataset = dataset.concat(p6.data);
-                dataset = dataset.concat(p7.data);
-                dataset = dataset.concat(p8.data);
-                dataset = dataset.concat(p9.data);
-                dataset = dataset.concat(p10.data);
-                dataset = dataset.concat(p11.data);
-                dataset = dataset.concat(p12.data);
-
-                mapDataSet = dataset.reduce(function (map, obj) {
-
-                    obj.timings.Fajr = obj.timings.Fajr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-                    obj.timings.Sunrise = obj.timings.Sunrise.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-                    obj.timings.Dhuhr = obj.timings.Dhuhr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-                    obj.timings.Asr = obj.timings.Asr.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-                    obj.timings.Maghrib = obj.timings.Maghrib.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-                    obj.timings.Isha = obj.timings.Isha.replace(" (WET)", "").replace(" (WEST)", "").replace(" (GMT)", "").replace(" (GST)", "").replace(" (+01)", "").replace(" (+00)", "");
-
-                    var value_ = {
-                        Fajr: parseTime(obj.timings.Fajr).getHours() * 60 + parseTime(obj.timings.Fajr).getMinutes(),
-                        Sunrise: parseTime(obj.timings.Sunrise).getHours() * 60 + parseTime(obj.timings.Sunrise).getMinutes(),
-                        Dhuhr: parseTime(obj.timings.Dhuhr).getHours() * 60 + parseTime(obj.timings.Dhuhr).getMinutes(),
-                        Asr: parseTime(obj.timings.Asr).getHours() * 60 + parseTime(obj.timings.Asr).getMinutes(),
-                        Maghrib: parseTime(obj.timings.Maghrib).getHours() * 60 + parseTime(obj.timings.Maghrib).getMinutes(),
-                        Isha: parseTime(obj.timings.Isha).getHours() * 60 + parseTime(obj.timings.Isha).getMinutes()
-                    };
-                    map[Math.floor(xScale(parseDateApi(obj.date.readable).getTime()))] = value_;
-                    return map;
-                }, {});
-
-                update(dataset);
-
-            });
-        } 
-    })
 
 }
 
