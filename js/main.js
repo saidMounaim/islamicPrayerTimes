@@ -364,6 +364,8 @@ var vLine;
 
 
 function update(dataset) {
+    
+    d3.selectAll('.focus').remove();
 
       focusDate = svg.append("g")
           .attr("class", "focus");
@@ -496,6 +498,7 @@ function update(dataset) {
           focusMaghrib.style("display", null); 
           focusIsha.style("display", null); 
         });
+
 
 }
 
